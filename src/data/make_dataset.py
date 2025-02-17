@@ -1,11 +1,22 @@
+import sys
+import os
 import pandas as pd
 import numpy as np
 import re
 import unicodedata
+import yaml
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
-from utils.constants import PREDEFINED_J_MAPPING
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+constants_path = os.path.join(current_dir, "..", "utils", "constants.yaml")
+
+with open(constants_path, 'r') as file:
+    constants = yaml.safe_load(file)
+
+PREDEFINED_J_MAPPING = constants['PREDEFINED_J_MAPPING']
 
 class FraudFeatureEngineer(BaseEstimator, TransformerMixin):
     """
@@ -71,30 +82,23 @@ class FraudFeatureEngineer(BaseEstimator, TransformerMixin):
         df['OOT'] = 'train'
         df.loc[df['week'].isin([15, 16, 17]), 'OOT'] = 'test'
 
-        # VARIABLE A: binarize (example: 1-3 high fraud, 4 low)
-        df['a_bin'] = (df['a'] <= 3).astype(int)
-
-        # VARIABLES B, C, D, E, F: fill missings/outliers
+        df['a_bin'] = (df['a'].fillna(5) <= 3).astype(int)
         df['b'] = df['b'].fillna(1.1)
         df['c'] = df['c'].fillna(1.1)
         df['d'] = df['d'].fillna(-1)
-        df['e'] = df['e'].replace(0, np.nan)
-        e_outlier = df['e'].quantile(0.99)
-        df['e'] = df['e'].fillna(e_outlier)
-        df['f'] = df['f'].replace(0, np.nan)
-        f_outlier = df['f'].quantile(0.99)
-        df['f'] = df['f'].fillna(f_outlier)
+        df['e'] = df['e'].fillna(-1)
+        df['f'] = df['f'].fillna(-1)
 
-        # VARIABLE G: country grouping
         df['g_agrup_simples'] = df['g'].apply(lambda x: x if x in ['BR', 'AR'] else 'others')
+        df['g_agrup_simples_num'] = df['g_agrup_simples'].map({'BR':2,'AR':1, 'others':0}).astype(int)
 
         # VARIABLE I: text processing
-        df['i'] = df['i'].astype(str)
+        df['i'] = df['i'].astype(str).fillna('')
         df['i_len'] = df['i'].str.len()
         df['i_special_chars'] = df['i'].apply(self._count_special_chars)
-        df['i_special_chars_agrup'] = df['i_special_chars'].apply(lambda x: str(x) if x <= 2 else ">2")
+        df['i_special_chars_agrup'] = df['i_special_chars'].apply(lambda x: x if x <= 2 else 3).astype(int)
         df['i_num_count'] = df['i'].apply(self._count_numbers)
-        df['i_num_count_agrup'] = df['i_num_count'].apply(lambda x: '<=2' if x <= 2 else '>2')
+        df['i_num_count_agrup'] = df['i_num_count'].apply(lambda x: 0 if x <= 2 else 1).astype(int)
         df['i_cleaned'] = df['i'].apply(self._clean_text)
         df['i_word_original'] = df['i'].str.lower().str.contains('original').astype(int)
         df['i_word_kit'] = df['i'].str.lower().str.contains('kit').astype(int)
@@ -103,14 +107,21 @@ class FraudFeatureEngineer(BaseEstimator, TransformerMixin):
 
         # VARIABLE J: cluster product categories
         df['j_cluster'] = df['j'].map(self.j_mapping_).fillna(-1).astype(int)
-        df['j_cluster_agrup'] = df['j_cluster'].apply(lambda x: 1 if x in [3,4,5] else 0)
+        df['j_cluster_agrup'] = df['j_cluster'].apply(lambda x: 1 if x in [3,4,5] else 0).astype(int)
 
         # VARIABLE K: discretize using hard-coded function
-        df['k_bin'] = df['k'].apply(self.gera_k)
+        df['k_bin'] = df['k'].apply(self.gera_k).astype(int)
 
-        # VARIABLES L, M, N, P, MONTO: keep as is (n and p are binary)
+        df['l'] = df['l'].fillna(-1)
+        df['m'] = df['m'].fillna(-1)
+        df['n'] = df['n'].fillna(1) # preenchendo com numero de maior volume para não afetar distribuição
+        
         # VARIABLE O: custom transformation (N/n -> 0, Y/y -> 1, else 2)
-        df['o_transformed'] = df['o'].apply(self._trata_o)
+        df['o_transformed'] = df['o'].apply(self._trata_o).astype(int)
+        
+        df['p'] = df['p'].map({'N':0, 'Y':1}).fillna(1) # preenchendo com numero de maior volume para não afetar distribuição
+
+        df['monto'] = df['monto'].fillna(-1) 
 
         return df
 
