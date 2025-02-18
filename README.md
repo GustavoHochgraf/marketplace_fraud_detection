@@ -179,9 +179,6 @@ marketplace_fraud_detection/
    if __name__ == "__main__":
        uvicorn.run("src.deployment.fastapi_app:app", host="0.0.0.0", port=8000, reload=True)
    ```
-3. **Testing:**  
-   - Access docs at: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)  
-   - Or send JSON payload via `curl` or `requests.post`.
 
 ---
 
