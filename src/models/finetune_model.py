@@ -61,7 +61,7 @@ def finetune_model(X_train: pd.DataFrame, y_train: pd.Series, model_output_name:
     best_params["random_state"] = 42
     
     # Train the final LightGBM model with the best hyperparameters.
-    best_model = lgb.LGBMClassifier(**best_params, n_jobs=-1)
+    best_model = lgb.LGBMClassifier(**best_params, n_jobs=-1,class_weight='balanced')
     best_model.fit(X_train, y_train)
     
     # Save the best model.
