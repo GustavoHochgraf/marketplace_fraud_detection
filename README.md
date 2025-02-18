@@ -18,13 +18,13 @@ Quais técnicas testou? Qual selecionou como melhor abordagem? Explique!
 anterior, cujo resultado é encontrado na coluna Score do dataset. Quais
 métricas usou e qual sua conclusão?
 
-![alt text](image-2.png)
 ![alt text](image-1.png)
+![alt text](image-2.png)
 
 Nas figuras acima, utilizamos duas principais métricas para comparar nosso modelo com o anterior:
 
-* ROC AUC (Area Under the ROC Curve): Mede a capacidade de distinguir transações fraudulentas das legítimas em diferentes pontos de corte. Nosso modelo (AUC=0.85) superou o modelo anterior (AUC=0.73).
-* PR AUC (Area Under the Precision-Recall Curve): Essencial para cenários desbalanceados, pois mostra como o modelo equilibra a precisão e o recall. Novamente, nosso modelo (AUC=0.38) superou o anterior (AUC=0.26).
+* ROC AUC (Area Under the ROC Curve): Mede a capacidade de distinguir transações fraudulentas das legítimas em diferentes pontos de corte. Modelo proposto (AUC=0.85) superou o modelo anterior (AUC=0.73).
+* PR AUC (Area Under the Precision-Recall Curve): Essencial para cenários desbalanceados, pois mostra como o modelo equilibra a precisão e o recall. Novamente, no modelo proposto (AUC=0.37) superou o anterior (AUC=0.26).
 
 3) Como você pode garantir que o desempenho do modelo no laboratório vai
 ser um proxy para o desempenho do modelo em produção?
@@ -54,10 +54,17 @@ pagamento.Dena o ponto de corte que maximize os lucros do MELI, de
 forma que todos os pagamentos com menor Score sejam aprovados e os
 maiores sejam rejeitados.
 
+Modelo baseline
 ![alt text](image.png)
 
 Ponto de corte que maximiza o lucro: 76
 Lucro máximo estimado: 264929.07
+
+Modelo proposto
+![alt text](image-3.png)
+
+Ponto de corte que maximiza o lucro: 60
+Lucro máximo estimado: 384556.36
 
 7) Se o modelo precisar responder online, no menor tempo possível, o que isso
 mudaria suas decisões no item 1?
